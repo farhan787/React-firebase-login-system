@@ -1,20 +1,14 @@
-/*
-  Project public facing name: project-269828534975
-  web client id: 269828534975-v1nhfedgddg9hk02h5j6dv1d0v0cbidt.apps.googleusercontent.com
-  web client secret: BXOtWA8R9EFriq8cS6D4JhUb
-*/
-
 import React, { Component } from 'react';
 
 var firebase = require('firebase');
 
 var config = {
-  apiKey: "AIzaSyAEX5o0qqW9mKKHQO2jB2R-zH6v69MlgCc",
-  authDomain: "loginsystem-a7109.firebaseapp.com",
-  databaseURL: "https://loginsystem-a7109.firebaseio.com/",
-  projectId: "loginsystem-a7109",
-  storageBucket: "loginsystem-a7109.appspot.com",
-  messagingSenderId: "269828534975"
+  apiKey: "",
+  authDomain: "",
+  databaseURL: "",
+  projectId: "",
+  storageBucket: "",
+  messagingSenderId: ""
 };
 
 firebase.initializeApp(config);
@@ -30,10 +24,12 @@ class Authen extends Component {
 
     promise
     .then(user => {
-      var database = firebase.database();
-      database.ref('users/'+user.uid).set({
+      var userRef = firebase.database().ref();
+      userRef.child('users/' + user.user.uid).set({
         email: email,
       })
+      console.log(`This is user uid ${user.uid}`)
+      console.log(user)
 
       // removing error message
       var erMsg = document.getElementById('error')
@@ -108,15 +104,10 @@ class Authen extends Component {
   googleSignIn(){
     console.log("I am from google sign in method.")
 
-    var provider = new firebase.auth.GoogleAuthProvider();
-
+    var provider = new firebase.auth.GoogleAuthProvider()
     firebase.auth().signInWithPopup(provider)
-
     .then(result => {
       var user = result.user
-      console.log(user)
-      console.log(user.displayName)
-      console.log(user.email)
 
       firebase.database().ref('users/'+user.uid).set({
         email: user.email,
@@ -142,7 +133,6 @@ class Authen extends Component {
       this.setState({msg: msg})
 
     })
-
     .catch(error => {
       var errorMessage = error.message;
       console.log(errorMessage)
@@ -176,8 +166,8 @@ class Authen extends Component {
       var msg = "Thanks for using my app. You've been successfully logged out."
       this.setState({msg: msg})
 
-      // To refresh page after logout in 8 seconds
-      setInterval('window.location.reload()', 8000);
+      // To refresh page after logout in 10 seconds
+      setInterval('window.location.reload()', 10000);
     })
 
     .catch(e => {
@@ -208,7 +198,7 @@ class Authen extends Component {
         <input id="pass" ref="password" type="password" placeholder="Enter your password"/><br/>
         <p id='error'>{this.state.err}</p><br/>
         <p id='printMsg'>{this.state.msg}</p><br/>
-        <button id="login" onClick="document.location.reload(true)" onClick={this.login}>Log In</button>
+        <button id="login" onClick={this.login}>Log In</button>
         <button id="signup" onClick={this.signup}>Sign Up</button>
         <button id="logout" className="hide" onClick={this.logout}>Log Out</button>
         <button id="googleSignIn" onClick = {this.googleSignIn} >Sign In with Google</button>
