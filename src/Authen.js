@@ -15,7 +15,31 @@ firebase.initializeApp(config);
 
 class Authen extends Component {
 
+  constructor(props){
+    super(props);
+
+    this.state = {
+      err: '',
+      msg: '',
+    };
+    this.login = this.login.bind(this)
+    this.signup = this.signup.bind(this)
+    this.logout = this.logout.bind(this)
+    this.googleSignIn = this.googleSignIn.bind(this)
+    this.removeAllMessages = this.removeAllMessages.bind(this)
+  }
+
+  removeAllMessages(){
+    var msgButton = document.getElementById('printMsg')
+    var errButton = document.getElementById('error')
+    msgButton.className = 'hide'
+    errButton.className = 'hide'
+  }
+
   signup(event){
+
+    this.removeAllMessages()
+
     const email = this.refs.email.value;
     const password = this.refs.password.value;
 
@@ -35,6 +59,9 @@ class Authen extends Component {
       var erMsg = document.getElementById('error')
       erMsg.className = 'hide'
 
+      // Remove the password after signup
+      document.getElementById('pass').value = ''
+
       var print = document.getElementById('printMsg')
       print.className = 'welmsg'
       var msg = "Welcome " + email + " and please log in.";
@@ -51,11 +78,14 @@ class Authen extends Component {
   }
 
   login(event){
+
+    this.removeAllMessages()
+
     const email = this.refs.email.value;
     const password = this.refs.password.value;
 
-    console.log(email)
-    console.log(password)
+    // console.log(email)
+    // console.log(password)
 
     const auth = firebase.auth();
     const promise = auth.signInWithEmailAndPassword(email, password)
@@ -63,17 +93,13 @@ class Authen extends Component {
     console.log("The promise is: ")
     console.log(promise)
 
-    // Todo handle login promise
     promise.then(user => {
 
-      // removing error message
-      var erMsg = document.getElementById('error')
-      erMsg.className = 'hide'
-
-      // removing buttons
+      // show logout button on login
       var lout = document.getElementById('logout');
       lout.classList.remove('hide');
 
+      // hiding login, signup, signInWithGoogle buttons
       var lin = document.getElementById('login')
       lin.className = 'hide'
 
@@ -83,6 +109,7 @@ class Authen extends Component {
       var sinGoogle = document.getElementById('googleSignIn')
       sinGoogle.className = 'hide'
 
+      // printing message
       var print = document.getElementById('printMsg')
       print.className = 'welmsg'
       var msg = "Welcome user, your email id is " + email;
@@ -100,32 +127,33 @@ class Authen extends Component {
 
   }
 
-// Sign in with Google
   googleSignIn(){
-    console.log("I am from google sign in method.")
+
+    this.removeAllMessages()
 
     var provider = new firebase.auth.GoogleAuthProvider()
     firebase.auth().signInWithPopup(provider)
     .then(result => {
-      var user = result.user
 
+      // show logout button on login
+      var lout = document.getElementById('logout');
+      lout.classList.remove('hide');
+
+      // hiding login, signup, signInWithGoogle buttons
+      var lin = document.getElementById('login')
+      lin.className = 'hide'
+      var sup = document.getElementById('signup')
+      sup.className = 'hide'
+      var sinGoogle = document.getElementById('googleSignIn')
+      sinGoogle.className = 'hide'
+
+      var user = result.user ;
       firebase.database().ref('users/'+user.uid).set({
         email: user.email,
         name: user.displayName,
       })
 
-      var lout = document.getElementById('logout');
-      lout.classList.remove('hide');
-
-      var lin = document.getElementById('login')
-      lin.className = 'hide'
-
-      var sup = document.getElementById('signup')
-      sup.className = 'hide'
-
-      var sinGoogle = document.getElementById('googleSignIn')
-      sinGoogle.className = 'hide'
-
+      // printing message
       var print = document.getElementById('printMsg')
       print.className = 'welmsg'
       var msg = `Welcome ${user.displayName}, your email id is ${user.email}`;
@@ -143,23 +171,27 @@ class Authen extends Component {
   }
 
   logout(event){
+
+    this.removeAllMessages()
+
+    // Remove the password after logout
+    document.getElementById('pass').value = ''
+
     var auth = firebase.auth()
     auth.signOut()
 
     .then(user=>{
-
+      // showing all buttons on lougout except logout
+      var lin = document.getElementById('login');
+      lin.classList.remove('hide');
+      var sup = document.getElementById('signup');
+      sup.classList.remove('hide');
+      var sinGoogle = document.getElementById('googleSignIn');
+      sinGoogle.classList.remove('hide');
       var lout = document.getElementById('logout')
       lout.className = 'hide';
 
-      var lin = document.getElementById('login');
-      lin.classList.remove('hide');
-
-      var sup = document.getElementById('signup');
-      sup.classList.remove('hide');
-
-      var sinGoogle = document.getElementById('googleSignIn');
-      sinGoogle.classList.remove('hide');
-
+      // printing message
       var print = document.getElementById('printMsg')
       print.className = 'welmsg'
 
@@ -167,7 +199,7 @@ class Authen extends Component {
       this.setState({msg: msg})
 
       // To refresh page after logout in 10 seconds
-      setInterval('window.location.reload()', 10000);
+      // setInterval('window.location.reload()', 10000);
     })
 
     .catch(e => {
@@ -176,19 +208,6 @@ class Authen extends Component {
       var err = e.message
       this.setState({err: err})
     })
-  }
-
-  constructor(props){
-    super(props);
-
-    this.state = {
-      err: '',
-      msg: '',
-    };
-    this.login = this.login.bind(this)
-    this.signup = this.signup.bind(this)
-    this.logout = this.logout.bind(this)
-    this.googleSignIn = this.googleSignIn.bind(this)
   }
 
   render(){
